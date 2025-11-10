@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMS Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <!-- Lucide Icons for better aesthetics -->
+    <script type="module">
+        import { createIcons, Menu, Bell, MessageSquare, User, ChevronDown, ShoppingCart, Package, Users, Settings, BarChart, HardHat, FileText, Factory, TrendingUp } from 'https://cdn.skypack.dev/lucide@latest';
+        createIcons({ icons: { Menu, Bell, MessageSquare, User, ChevronDown, ShoppingCart, Package, Users, Settings, BarChart, HardHat, FileText, Factory, TrendingUp } });
+    </script>
+    <!-- Chart.js CDN for interactive charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #3b82f6; /* Blue-500 */
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Gray-100 */
+        }
+        .nav-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+        }
+        .sidebar {
+            transition: transform 0.3s ease-in-out;
+            /* Ensures sidebar is fixed on mobile/tablet */
+            transform: translateX(0); /* Default visible */
+        }
+        .sidebar-item {
+            cursor: pointer;
+            user-select: none;
+        }
+        @media (max-width: 767px) {
+            .sidebar {
+                transform: translateX(-100%); /* Hidden by default on mobile */
+                position: fixed;
+                height: 100vh;
+                top: 0;
+                left: 0;
+                z-index: 50;
+            }
+            .sidebar.is-open {
+                transform: translateX(0);
+            }
+        }
+        /* Custom scrollbar for main content */
+        .main-content {
+            overflow-y: auto;
+            max-height: 100vh;
+        }
+        /* Style for sub-menu */
+        .sub-menu {
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+        }
+        .sub-menu.is-open {
+            max-height: 300px; /* Large enough to fit sub-items */
+            opacity: 1;
+        }
+        .sub-menu a.active {
+            background-color: #e0f2fe; /* blue-50 */
+            color: #1d4ed8; /* blue-700 */
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="flex min-h-screen">
+
+    <!-- Sidebar Navigation -->
+    <!-- Note: The sidebar structure is consistent across all generated pages -->
+    <nav id="sidebar" class="sidebar flex-shrink-0 w-64 bg-white shadow-xl md:shadow-lg md:sticky top-0 z-40 p-4 border-r border-gray-100">
+        
+        <!-- Logo/Title -->
+        <div class="flex items-center justify-start p-3 mb-6 border-b border-gray-200">
+            <svg class="w-8 h-8 text-blue-600 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM6 10a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zM8 13a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path></svg>
+            <h1 class="text-xl font-bold text-gray-800">IMS Control</h1>
+        </div>
+
+        <!-- Navigation Links -->
+        <div class="space-y-2">
+            
+            <!-- Dashboard (Active) -->
+            <a href="dashboard.html" class="flex items-center p-3 text-sm font-semibold text-white bg-blue-600 rounded-lg shadow-md">
+                <svg class="nav-icon" data-lucide="bar-chart"></svg>
+                ড্যাশবোর্ড
+            </a>
+
+            <!-- Products Menu (Dropdown) -->
+            <div class="sidebar-item">
+                <div class="flex items-center justify-between p-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100">
+                    <div class="flex items-center">
+                        <svg class="nav-icon" data-lucide="package"></svg>
+                        পণ্য (Products)
+                    </div>
+                    <svg class="w-4 h-4 text-gray-500 transition-transform duration-200" data-lucide="chevron-down"></svg>
+                </div>
+                <div class="sub-menu ml-4">
+                    <a href="all_products.html" class="block p-2 text-xs text-gray-600 rounded-md hover:bg-gray-50">সমস্ত পণ্য</a>
+                    <a href="categories.html" class="block p-2 text-xs text-gray-600 rounded-md hover:bg-gray-50">ক্যাটাগরি</a>
+                    <a href="add_new_product.html" class="block p-2 text-xs text-gray-600 rounded-md hover:bg-gray-50">নতুন পণ্য যোগ করুন</a>
+                </div>
+            </div>
+
+            <!-- Orders Menu (Dropdown) -->
+            <div class="sidebar-item">
+                <div class="flex items-center justify-between p-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100">
+                    <div class="flex items-center">
+                        <svg class="nav-icon" data-lucide="shopping-cart"></svg>
+                        অর্ডার (Orders)
+                    </div>
+                    <svg class="w-4 h-4 text-gray-500 transition-transform duration-200" data-lucide="chevron-down"></svg>
+                </div>
+                <div class="sub-menu ml-4">
+                    <a href="sales_orders.html" class="block p-2 text-xs text-gray-600 rounded-md hover:bg-gray-50">বিক্রয় অর্ডার</a>
+                    <a href="purchase_orders.html" class="block p-2 text-xs text-gray-600 rounded-md hover:bg-gray-50">ক্রয় অর্ডার</a>
+                    <a href="invoices.html" class="block p-2 text-xs text-gray-600 rounded-md hover:bg-gray-50">ইনভয়েস</a>
+                </div>
+            </div>
+
+            <!-- Suppliers (Dropdown Added) -->
+            <div class="sidebar-item">
+                <div class="flex items-center justify-between p-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100">
+                    <div class="flex items-center">
+                        <svg class="nav-icon" data-lucide="factory"></svg>
+                        সরবরাহকারী (Suppliers)
+                    </div>
+                    <svg class="w-4 h-4 text-gray-500 transition-transform duration-200" data-lucide="chevron-down"></svg>
+                </div>
+                <div class="sub-menu ml-4">
+                    <a href="all_suppliers.html" class="block p-2 text-xs text-gray-600 rounded-md hover:bg-gray-50">সমস্ত সরবরাহকারী</a>
+                    <a href="#" class="block p-2 text-xs text-gray-600 rounded-md hover:bg-gray-50">নতুন সরবরাহকারী যোগ</a>
+                    <a href="#" class="block p-2 text-xs text-gray-600 rounded-md hover:bg-gray-50">পেমেন্ট</a>
+                </div>
+            </div>
+
+            <!-- Stock Control (Static Link) -->
+            <a href="#" class="flex items-center p-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100">
+                <svg class="nav-icon" data-lucide="hard-hat"></svg>
+                স্টক কন্ট্রোল
+            </a>
+
+            <!-- Reports (Dropdown Added) -->
+            <div class="sidebar-item">
+                <div class="flex items-center justify-between p-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100">
+                    <div class="flex items-center">
+                        <svg class="nav-icon" data-lucide="trending-up"></svg>
+                        রিপোর্ট ও অ্যানালিটিক্স
+                    </div>
+                    <svg class="w-4 h-4 text-gray-500 transition-transform duration-200" data-lucide="chevron-down"></svg>
+                </div>
+                <div class="sub-menu ml-4">
+                    <a href="sales_report.html" class="block p-2 text-xs text-gray-600 rounded-md hover:bg-gray-50">বিক্রয় রিপোর্ট</a>
+                    <a href="stock_report.html" class="block p-2 text-xs text-gray-600 rounded-md hover:bg-gray-50">স্টক রিপোর্ট</a>
+                    <a href="#" class="block p-2 text-xs text-gray-600 rounded-md hover:bg-gray-50">অডিট লগ</a>
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- System/User Links Separator -->
+        <div class="pt-6 mt-6 border-t border-gray-200 space-y-2">
+            <!-- Users & Roles (Dropdown Added for better structure) -->
+            <div class="sidebar-item">
+                <div class="flex items-center justify-between p-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100">
+                    <div class="flex items-center">
+                        <svg class="nav-icon" data-lucide="users"></svg>
+                        ব্যবহারকারী ও ভূমিকা
+                    </div>
+                    <svg class="w-4 h-4 text-gray-500 transition-transform duration-200" data-lucide="chevron-down"></svg>
+                </div>
+                <div class="sub-menu ml-4">
+                    <a href="all_users.html" class="block p-2 text-xs text-gray-600 rounded-md hover:bg-gray-50">সমস্ত ব্যবহারকারী</a>
+                    <a href="#" class="block p-2 text-xs text-gray-600 rounded-md hover:bg-gray-50">পারমিশন</a>
+                </div>
+            </div>
+
+            <!-- Settings (Dropdown Added) -->
+            <div class="sidebar-item">
+                <div class="flex items-center justify-between p-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100">
+                    <div class="flex items-center">
+                        <svg class="nav-icon" data-lucide="settings"></svg>
+                        সেটিংস
+                    </div>
+                    <svg class="w-4 h-4 text-gray-500 transition-transform duration-200" data-lucide="chevron-down"></svg>
+                </div>
+                <div class="sub-menu ml-4">
+                    <a href="#" class="block p-2 text-xs text-gray-600 rounded-md hover:bg-gray-50">সাধারণ</a>
+                    <a href="#" class="block p-2 text-xs text-gray-600 rounded-md hover:bg-gray-50">API ইন্টিগ্রেশন</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Wrapper -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+
+        <!-- Top Header Bar -->
+        <header class="flex-shrink-0 bg-white shadow-sm border-b border-gray-200 p-4 sticky top-0 z-30">
+            <!-- Header content identical to previous version -->
+            <div class="flex items-center justify-between">
+                
+                <!-- Left: Sidebar Toggle -->
+                <button id="menu-toggle" class="p-2 rounded-full text-gray-600 hover:bg-gray-100 md:hidden">
+                    <svg data-lucide="menu" class="w-6 h-6"></svg>
+                </button>
+                
+                <h1 class="text-xl font-semibold text-gray-800 hidden md:block">IMS ড্যাশবোর্ড</h1>
+
+                <!-- Right: Icons and Profile Dropdown -->
+                <div class="flex items-center space-x-4 relative">
+                    
+                    <!-- Notification Icon -->
+                    <button class="p-2 rounded-full text-gray-600 hover:bg-gray-100 relative">
+                        <svg data-lucide="bell" class="w-6 h-6"></svg>
+                        <span class="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full border-2 border-white"></span>
+                    </button>
+                    
+                    <!-- Messages Icon -->
+                    <button class="p-2 rounded-full text-gray-600 hover:bg-gray-100 relative">
+                        <svg data-lucide="message-square" class="w-6 h-6"></svg>
+                        <span class="absolute top-1 right-1 h-2 w-2 bg-yellow-500 rounded-full border-2 border-white"></span>
+                    </button>
+
+                    <!-- Profile Dropdown -->
+                    <div class="relative">
+                        <button id="profile-menu-button" class="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-100">
+                            <div class="h-8 w-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm">JS</div>
+                            <span class="text-sm font-medium text-gray-700 hidden sm:block">Jane Smith</span>
+                            <svg data-lucide="chevron-down" class="w-4 h-4 text-gray-500"></svg>
+                        </button>
+
+                        <!-- Dropdown Content -->
+                        <div id="profile-menu" class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-lg z-50 origin-top-right hidden">
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-t-xl">
+                                <span class="mr-2">👤</span> প্রোফাইল বিবরণ
+                            </a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <span class="mr-2">🔑</span> পাসওয়ার্ড পরিবর্তন
+                            </a>
+                            <div class="border-t border-gray-100"></div>
+                            <a href="#" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-b-xl">
+                                <span class="mr-2">🚪</span> লগআউট
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area: Dashboard Specific Content -->
+        <main class="main-content flex-1 p-6 md:p-10 transition-all duration-300">
+            <!-- Dashboard Title and Info -->
+            <header class="mb-8">
+                <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900">ড্যাশবোর্ড ওভারভিউ</h2>
+                <p class="text-gray-500 mt-1">বিক্রয়, স্টকের স্তর এবং গুরুত্বপূর্ণ সতর্কতার রিয়েল-টাইম সারাংশ।</p>
+            </header>
+
+            <!-- 1. Key Metrics Grid -->
+            <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                <!-- Metric Cards (Same as before) -->
+                <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-blue-500 transition duration-300 hover:shadow-xl">
+                    <p class="text-sm font-medium text-gray-500">মোট পণ্য</p>
+                    <p class="text-4xl font-bold text-gray-900 mt-1" id="total-products">1,452</p>
+                    <p class="text-xs text-green-500 mt-2 flex items-center">
+                        <span class="mr-1">▲ 12%</span> গত মাসের তুলনায়
+                    </p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-red-500 transition duration-300 hover:shadow-xl">
+                    <p class="text-sm font-medium text-gray-500">বাকি অর্ডার</p>
+                    <p class="text-4xl font-bold text-red-600 mt-1" id="pending-orders">45</p>
+                    <p class="text-xs text-red-500 mt-2 flex items-center">
+                        <span class="mr-1">!</span> অ্যাকশন প্রয়োজন
+                    </p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-amber-500 transition duration-300 hover:shadow-xl">
+                    <p class="text-sm font-medium text-gray-500">কম স্টকের আইটেম</p>
+                    <p class="text-4xl font-bold text-amber-600 mt-1" id="low-stock-items">18</p>
+                    <p class="text-xs text-amber-500 mt-2 flex items-center">
+                        <span class="mr-1">~</span> পুনরায় অর্ডার প্রয়োজন
+                    </p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-green-500 transition duration-300 hover:shadow-xl">
+                    <p class="text-sm font-medium text-gray-500">ইনভেন্টরি মূল্য</p>
+                    <p class="text-4xl font-bold text-gray-900 mt-1" id="inventory-value">$1.2M</p>
+                    <p class="text-xs text-green-500 mt-2 flex items-center">
+                        <span class="mr-1">▲ 3%</span> মোট পণ্যের মূল্য
+                    </p>
+                </div>
+            </section>
+
+            <!-- 2. Charts Section -->
+            <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+                <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">মাসিক বিক্রয় প্রবণতা</h3>
+                    <div class="h-64 flex items-center justify-center">
+                        <canvas id="sales-chart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">ক্যাটাগরি অনুসারে স্টক বিতরণ</h3>
+                    <div class="h-64 flex items-center justify-center">
+                        <canvas id="stock-chart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. Recent Activity (Orders and Products) -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                <!-- Widget 1: Recent Sales Orders Table (Last 5) -->
+                <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">সাম্প্রতিক বিক্রয় অর্ডার</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ক্রেতা</th>
+                                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">মোট</th>
+                                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">স্ট্যাটাস</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr><td class="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#9005</td><td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">Eve Adams</td><td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">$95.00</td><td class="px-3 py-4 whitespace-nowrap text-sm"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">সম্পূর্ণ</span></td></tr>
+                                <tr><td class="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#9004</td><td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">David Lee</td><td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">$210.30</td><td class="px-3 py-4 whitespace-nowrap text-sm"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">বাকি</span></td></tr>
+                                <tr><td class="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#9003</td><td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">Charlie Doe</td><td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">$89.99</td><td class="px-3 py-4 whitespace-nowrap text-sm"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">প্রক্রিয়াকরণ</span></td></tr>
+                                <tr><td class="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#9002</td><td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">Bob Smith</td><td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">$120.50</td><td class="px-3 py-4 whitespace-nowrap text-sm"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">পাঠানো হয়েছে</span></td></tr>
+                                <tr><td class="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#9001</td><td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">Alice Johnson</td><td class="px-3 py-4 whitespace-nowrap text-sm text-gray-500">$450.00</td><td class="px-3 py-4 whitespace-nowrap text-sm"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">বাকি</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Widget 2: Latest Products List -->
+                <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">সাম্প্রতিক যুক্ত পণ্য</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
+                                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">পণ্যের নাম</th>
+                                    <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">স্টক</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr><td class="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">SKU-205</td><td class="px-3 py-4 whitespace-nowrap text-sm text-gray-700">Premium Wireless Mouse</td><td class="px-3 py-4 whitespace-nowrap text-sm text-green-600">320</td></tr>
+                                <tr><td class="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">SKU-206</td><td class="px-3 py-4 whitespace-nowrap text-sm text-gray-700">4K Ultra Monitor 32"</td><td class="px-3 py-4 whitespace-nowrap text-sm text-green-600">85</td></tr>
+                                <tr><td class="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">SKU-207</td><td class="px-3 py-4 whitespace-nowrap text-sm text-gray-700">Ergonomic Keyboard Blue</td><td class="px-3 py-4 whitespace-nowrap text-sm text-green-600">140</td></tr>
+                                <tr><td class="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">SKU-208</td><td class="px-3 py-4 whitespace-nowrap text-sm text-gray-700">USB-C Hub Pro</td><td class="px-3 py-4 whitespace-nowrap text-sm text-green-600">550</td></tr>
+                                <tr><td class="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">SKU-209</td><td class="px-3 py-4 whitespace-nowrap text-sm text-gray-700">Noise Cancelling Headphone</td><td class="px-3 py-4 whitespace-nowrap text-sm text-red-600">10</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 4. Critical Alerts -->
+                <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-md border border-gray-100">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">জরুরী ইনভেন্টরি সতর্কতা</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <li class="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start list-none">
+                            <span class="text-red-500 text-xl mr-3">🔥</span>
+                            <div>
+                                <p class="text-sm font-medium text-red-800">Product A স্টক শেষ</p>
+                                <p class="text-xs text-red-600">SKU-001 বিক্রি হয়ে গেছে। অবিলম্বে PO প্রয়োজন।</p>
+                            </div>
+                        </li>
+                        <li class="p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start list-none">
+                            <span class="text-amber-500 text-xl mr-3">⚠️</span>
+                            <div>
+                                <p class="text-sm font-medium text-amber-800">স্টক অসঙ্গতি পাওয়া গেছে</p>
+                                <p class="text-xs text-amber-600">অবস্থান WH-A: সাইকেল কাউন্ট থেকে ৫ ইউনিট অনুপস্থিত।</p>
+                            </div>
+                        </li>
+                        <li class="p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-start list-none">
+                            <span class="text-blue-500 text-xl mr-3">📦</span>
+                            <div>
+                                <p class="text-sm font-medium text-blue-800">নতুন পণ্য প্রাপ্ত</p>
+                                <p class="text-xs text-blue-600">PO #P0045 প্রাপ্ত হয়েছে এবং সংরক্ষণের অপেক্ষায়।</p>
+                            </div>
+                        </li>
+                    </div>
+                </div>
+
+            </div>
+
+        </main>
+    </div> <!-- End Main Content Wrapper -->
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('sidebar');
+            const menuToggle = document.getElementById('menu-toggle');
+            const profileMenuButton = document.getElementById('profile-menu-button');
+            const profileMenu = document.getElementById('profile-menu');
+            const sidebarItems = document.querySelectorAll('.sidebar-item');
+
+            // --- 1. Sidebar Toggle Logic (Mobile) ---
+            const isMobile = () => window.innerWidth < 768;
+
+            if (isMobile()) {
+                sidebar.classList.remove('is-open'); 
+            }
+
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('is-open');
+            });
+
+            document.addEventListener('click', (event) => {
+                if (isMobile() && sidebar.classList.contains('is-open') && 
+                    !sidebar.contains(event.target) && !menuToggle.contains(event.target)) {
+                    sidebar.classList.remove('is-open');
+                }
+            });
+
+
+            // --- 2. Profile Dropdown Toggle ---
+            profileMenuButton.addEventListener('click', (e) => {
+                e.stopPropagation(); 
+                profileMenu.classList.toggle('hidden');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!profileMenu.contains(e.target) && !profileMenuButton.contains(e.target)) {
+                    profileMenu.classList.add('hidden');
+                }
+            });
+
+            // --- 3. Sidebar Dropdown Logic (Fixed Rotation) ---
+            sidebarItems.forEach(item => {
+                const header = item.querySelector(':scope > div:first-child');
+                const subMenu = item.querySelector('.sub-menu');
+                const chevron = header.querySelector('svg:last-child');
+                
+                // Check if current page is within this dropdown menu
+                const currentPath = window.location.pathname.split('/').pop();
+                const isActiveParent = Array.from(subMenu.querySelectorAll('a')).some(link => {
+                    return link.href.split('/').pop() === currentPath;
+                });
+
+                if (isActiveParent) {
+                    subMenu.classList.add('is-open');
+                    chevron.style.transform = 'rotate(180deg)';
+                }
+
+
+                header.addEventListener('click', () => {
+                    // Close all other open menus first
+                    sidebarItems.forEach(otherItem => {
+                        if (otherItem !== item) {
+                            const otherSubMenu = otherItem.querySelector('.sub-menu');
+                            const otherChevron = otherItem.querySelector('svg:last-child');
+                            otherSubMenu.classList.remove('is-open');
+                            otherChevron.style.transform = 'rotate(0deg)';
+                        }
+                    });
+
+                    // Toggle current menu
+                    subMenu.classList.toggle('is-open');
+                    if (subMenu.classList.contains('is-open')) {
+                        chevron.style.transform = 'rotate(180deg)';
+                    } else {
+                        chevron.style.transform = 'rotate(0deg)';
+                    }
+                });
+
+                const subLinks = subMenu.querySelectorAll('a');
+                subLinks.forEach(link => {
+                    if (link.href.split('/').pop() === currentPath) {
+                        link.classList.add('active'); // Add active class for highlighting
+                    }
+                    link.addEventListener('click', () => {
+                        if (isMobile()) {
+                            sidebar.classList.remove('is-open');
+                        }
+                    });
+                });
+            });
+
+            // --- 4. Chart.js Initialization ---
+            function initializeCharts() {
+                // Dummy Data
+                const salesData = {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                    datasets: [{
+                        label: 'বিক্রয় পরিমাণ (ইউনিট)',
+                        data: [120, 150, 180, 220, 190, 250, 280],
+                        borderColor: '#3b82f6', 
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                };
+
+                const stockData = {
+                    labels: ['Electronics', 'Office Supplies', 'Apparel', 'Tools'],
+                    datasets: [{
+                        label: 'স্টক বিতরণ',
+                        data: [40, 35, 15, 10], 
+                        backgroundColor: [
+                            '#3b82f6', 
+                            '#10b981', 
+                            '#f59e0b', 
+                            '#ef4444'  
+                        ],
+                        hoverOffset: 8
+                    }]
+                };
+
+                // Monthly Sales Trend Chart (Line Chart)
+                new Chart(document.getElementById('sales-chart'), {
+                    type: 'line',
+                    data: salesData,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            title: { display: false }
+                        },
+                        scales: {
+                            y: { beginAtZero: true, title: { display: true, text: 'বিক্রয় ইউনিট' } },
+                            x: { title: { display: true, text: 'মাস' } }
+                        }
+                    }
+                });
+
+                // Stock Distribution Chart (Doughnut Chart)
+                new Chart(document.getElementById('stock-chart'), {
+                    type: 'doughnut',
+                    data: stockData,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'right' },
+                            title: { display: false }
+                        }
+                    }
+                });
+            }
+
+            initializeCharts();
+        });
+    </script>
+</body>
+</html>
